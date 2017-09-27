@@ -1,3 +1,6 @@
+# Archives
+*.tar.bz2
+
 # The executable
 # why the compiled file is under /src ?
 /src/AcDc
