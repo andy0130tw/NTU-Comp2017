@@ -39,8 +39,8 @@ int main( int argc, char *argv[] )
 }
 
 
-/********************************************* 
-  Scanning 
+/*********************************************
+  Scanning
  *********************************************/
 Token getNumericToken( FILE *source, char c )
 {
