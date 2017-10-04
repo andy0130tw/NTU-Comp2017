@@ -39,6 +39,8 @@ typedef struct Token {
 typedef struct TokenStream {
     FILE* stream;
     Token* peek;
+    int line;
+    int col;
 } TokenStream;
 
 /*** The following are nodes of the AST. ***/
@@ -125,7 +127,9 @@ typedef struct SymbolTable {
 
 
 /* scanning */
-Token getNumericToken(FILE *source, char c);
+char tsGetchar(TokenStream *source);
+char tsUngetc(char c, TokenStream *source);
+Token getNumericToken(TokenStream *source, char c);
 Token scanner(TokenStream *source);
 int retreat(TokenStream *source, Token token);
 

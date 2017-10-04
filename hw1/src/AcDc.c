@@ -4,6 +4,8 @@
 #include <string.h>
 #include "header.h"
 
+#define tsSyntaxError(ts, str, ...)  \
+    printf("Line %d, col %d: Syntax error: " str , (ts)->line + 1, (ts)->col + 1, ##__VA_ARGS__);
 
 int main(int argc, char *argv[]) {
     FILE *source, *target;
@@ -39,17 +41,38 @@ int main(int argc, char *argv[]) {
 /*********************************************
   Scanning
  *********************************************/
-Token getNumericToken(FILE *source, char c) {
+char tsGetchar(TokenStream *source) {
+    char c = fgetc(source->stream);
+    if (c == '\n') {
+        source->line++, source->col = 0;
+    } else {
+        source->col++;
+    }
+    return c;
+}
+
+char tsUngetc(char c, TokenStream *source) {
+    char ret = ungetc(c, source->stream);
+    if (c == '\n') {
+        // cannot recover colNo if going back to previous line
+        source->line--, source->col = -1;
+    } else {
+        source->col--;
+    }
+    return ret;
+}
+
+Token getNumericToken(TokenStream *source, char c) {
     Token token;
     int i = 0;
 
     while (isdigit(c)) {
         token.tok[i++] = c;
-        c = fgetc(source);
+        c = tsGetchar(source);
     }
 
     if (c != '.') {
-        ungetc(c, source);
+        tsUngetc(c, source);
         token.tok[i] = '\0';
         token.type = IntValue;
         return token;
@@ -57,19 +80,19 @@ Token getNumericToken(FILE *source, char c) {
 
     token.tok[i++] = '.';
 
-    c = fgetc(source);
+    c = tsGetchar(source);
     if (!isdigit(c)) {
-        ungetc(c, source);
-        printf("Expect a digit : %c\n", c);
+        tsUngetc(c, source);
+        tsSyntaxError(source, "Expect a digit, got [%c]\n", c);
         exit(1);
     }
 
     while (isdigit(c)) {
         token.tok[i++] = c;
-        c = fgetc(source);
+        c = tsGetchar(source);
     }
 
-    ungetc(c, source);
+    tsUngetc(c, source);
     token.tok[i] = '\0';
     token.type = FloatValue;
     return token;
@@ -86,26 +109,24 @@ Token scanner(TokenStream *source) {
         return token;
     }
 
-    FILE * const src_file = source->stream;
+    while (!feof(source->stream)) {
+        c = tsGetchar(source);
 
-    while (!feof(src_file)) {
-        c = fgetc(src_file);
-
-        while (isspace(c)) c = fgetc(src_file);
+        while (isspace(c)) c = tsGetchar(source);
 
         if (isdigit(c))
-            return getNumericToken(src_file, c);
+            return getNumericToken(source, c);
 
         if (islower(c)) {
             int len = 0;
             token.tok[len++] = c;
-            while (c = fgetc(src_file), islower(c)) {
+            while (c = tsGetchar(source), islower(c)) {
                 token.tok[len++] = c;
                 // FIXME: reject if the token is too long
             }
             token.tok[len] = '\0';
             if (c != EOF) {
-                ungetc(c, src_file);
+                tsUngetc(c, source);
             }
             // rewind c to the first character for later use
             // a rather clumsy workaround
@@ -148,7 +169,7 @@ Token scanner(TokenStream *source) {
             token.tok[0] = '\0';
             return token;
         default:
-            printf("Invalid character : %c\n", c);
+            tsSyntaxError(source, "Invalid character [%c]\n", c);
             exit(1);
         }
     }
@@ -161,6 +182,7 @@ Token scanner(TokenStream *source) {
 int retreat(TokenStream *source, Token token) {
     if (source->peek != NULL) {
         printf("Cannot push back token -- slot is not empty\n");
+        exit(1);
         return -1;
     }
     Token* tmp = (Token*) malloc(sizeof(Token));
@@ -187,12 +209,12 @@ Declaration parseDeclaration(TokenStream *source, Token token) {
         if (strcmp(token2.tok, "f") == 0 ||
                 strcmp(token2.tok, "i") == 0 ||
                 strcmp(token2.tok, "p") == 0) {
-            printf("Syntax Error: %s cannot be used as id\n", token2.tok);
+            tsSyntaxError(source, "[%s] cannot be used as id\n", token2.tok);
             exit(1);
         }
         return makeDeclarationNode(token, token2);
     default:
-        printf("Syntax Error: Expect Declaration %s\n", token.tok);
+        tsSyntaxError(source, "Expect Declaration, got [%s]\n", token.tok);
         exit(1);
     }
 }
@@ -214,7 +236,7 @@ Declarations *parseDeclarations(TokenStream *source) {
     case EOFsymbol:
         return NULL;
     default:
-        printf("Syntax Error: Expect declarations %s\n", token.tok);
+        tsSyntaxError(source, "Expect declarations, got [%s]\n", token.tok);
         exit(1);
     }
 }
@@ -238,7 +260,7 @@ Expression *parseValue(TokenStream *source) {
         (value->v).val.fvalue = atof(token.tok);
         break;
     default:
-        printf("Syntax Error: Expect Identifier or a Number %s\n", token.tok);
+        tsSyntaxError(source, "Expect Identifier or a Number, got [%s]\n", token.tok);
         exit(1);
     }
 
@@ -272,7 +294,7 @@ Expression *parseExpressionTail(TokenStream *source, Expression *lvalue) {
     case EOFsymbol:
         return lvalue;
     default:
-        printf("Syntax Error: Expect a numeric value or an identifier %s\n", token.tok);
+        tsSyntaxError(source, "Expect a numeric value or an identifier, got [%s]\n", token.tok);
         exit(1);
     }
 }
@@ -304,7 +326,7 @@ Expression *parseExpression(TokenStream *source, Expression *lvalue) {
     case EOFsymbol:
         return NULL;
     default:
-        printf("Syntax Error: Expect a numeric value or an identifier %s\n", token.tok);
+        tsSyntaxError(source, "Expect a numeric value or an identifier, got [%s]\n", token.tok);
         exit(1);
     }
 }
@@ -321,7 +343,7 @@ Statement parseStatement(TokenStream *source, Token token) {
             expr = parseExpression(source, value);
             return makeAssignmentNode(token.tok, value, expr);
         } else {
-            printf("Syntax Error: Expect an assignment op %s\n", next_token.tok);
+            tsSyntaxError(source, "Expect an assignment op, got [%s]\n", next_token.tok);
             exit(1);
         }
     case PrintOp:
@@ -329,12 +351,12 @@ Statement parseStatement(TokenStream *source, Token token) {
         if (next_token.type == Alphabet)
             return makePrintNode(next_token.tok);
         else {
-            printf("Syntax Error: Expect an identifier %s\n", next_token.tok);
+            tsSyntaxError(source, "Expect an identifier, got [%s]\n", next_token.tok);
             exit(1);
         }
         break;
     default:
-        printf("Syntax Error: Expect a statement %s\n", token.tok);
+        tsSyntaxError(source, "Expect a statement, got [%s]\n", token.tok);
         exit(1);
     }
 }
@@ -354,7 +376,7 @@ Statements *parseStatements(TokenStream *source) {
     case EOFsymbol:
         return NULL;
     default:
-        printf("Syntax Error: Expect statements %s\n", token.tok);
+        tsSyntaxError(source, "Expect statements, got [%s]\n", token.tok);
         exit(1);
     }
 }
