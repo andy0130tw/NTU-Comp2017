@@ -592,15 +592,17 @@ void checkstmt(Statement *stmt, SymbolTable * table) {
 
         char id = lookup_id(table, assign->str);
         substitute_var(assign->str, id);
-        stmt->stmt.assign.type = lookup_table(table, id);
-        if (assign->expr->type == Float && stmt->stmt.assign.type == Int) {
+        assign->type = lookup_table(table, id);
+        //  RHS (expr) is float, but       LHS (var) is Int
+        if (assign->expr->type == Float && assign->type == Int) {
             printf("error : can't convert float to integer\n");
         } else {
             convertType(assign->expr, assign->type);
         }
     } else if (stmt->type == Print) {
         printf("print : %s \n", stmt->stmt.str);
-        stmt->stmt.str[0] = lookup_id(table, stmt->stmt.str);
+        char id = lookup_id(table, stmt->stmt.str);
+        substitute_var(stmt->stmt.str, id);
     } else printf("error : statement error\n"); //error
 }
 
