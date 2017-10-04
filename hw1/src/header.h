@@ -1,3 +1,5 @@
+#include <stdio.h>
+
 #ifndef HEADER_H_INCLUDED
 #define HEADER_H_INCLUDED
 
@@ -34,12 +36,21 @@ typedef struct Token {
     char tok[1025];
 } Token;
 
+typedef struct TokenStream {
+    FILE* stream;
+    Token* peek;
+} TokenStream;
+
 /*** The following are nodes of the AST. ***/
+typedef struct Variable {
+    DataType type;
+    char* varname;
+} Variable;
 
 /* For decl production or say one declaration statement */
 typedef struct Declaration {
-    DataType type;
-    char name;
+    Variable var;
+    // char reg;
 } Declaration;
 
 /*
@@ -57,13 +68,12 @@ typedef struct Declarations {
 typedef struct Value {
     ValueType type;
     union {
-        char id;                   /* if the node represent the access of the identifier */
+        char* str;                 /* if the node represent the access of the identifier */
         Operation op;              /* store +, -, *, /, =, type_convert */
         int ivalue;                /* for integer constant in the expression */
         float fvalue;              /* for float constant */
     } val;
 } Value;
-
 
 /*
    The data structure of the expression tree.
@@ -80,7 +90,7 @@ typedef struct Expression {
 
 /* For one assignment statement */
 typedef struct AssignmentStatement {
-    char id;
+    char* str;
     Expression *expr;
     DataType type;      /* For type checking to store the type of all expression on the right. */
 } AssignmentStatement;
@@ -90,7 +100,7 @@ typedef struct AssignmentStatement {
 typedef struct Statement {
     StmtType type;
     union {
-        char variable;              /* print statement */
+        char* str;              /* print statement */
         AssignmentStatement assign;
     } stmt;
 } Statement;
@@ -109,39 +119,53 @@ typedef struct Program {
 
 /* For building the symbol table */
 typedef struct SymbolTable {
-    DataType table[26];
+    int size;
+    Variable table[26];
 } SymbolTable;
 
 
+/* scanning */
 Token getNumericToken(FILE *source, char c);
-Token scanner(FILE *source);
+Token scanner(TokenStream *source);
+int retreat(TokenStream *source, Token token);
+
+/* parsing + building AST */
+char* copyString(char* str);
 Declaration makeDeclarationNode(Token declare_type, Token identifier);
 Declarations *makeDeclarationTree(Declaration decl, Declarations *decls);
-Declaration parseDeclaration(FILE *source, Token token);
-Declarations *parseDeclarations(FILE *source);
-Expression *parseValue(FILE *source);
-Expression *parseExpressionTail(FILE *source, Expression *lvalue);
-Expression *parseExpression(FILE *source, Expression *lvalue);
-Statement makeAssignmentNode(char id, Expression *v, Expression *expr_tail);
-Statement makePrintNode(char id);
+Declaration parseDeclaration(TokenStream *source, Token token);
+Declarations *parseDeclarations(TokenStream *source);
+Expression *parseValue(TokenStream *source);
+Expression *parseExpressionTail(TokenStream *source, Expression *lvalue);
+Expression *parseExpression(TokenStream *source, Expression *lvalue);
+Statement makeAssignmentNode(char* str, Expression *v, Expression *expr_tail);
+Statement makePrintNode(char* str);
 Statements *makeStatementTree(Statement stmt, Statements *stmts);
-Statement parseStatement(FILE *source, Token token);
-Statements *parseStatements(FILE * source);
-Program parser(FILE *source);
+Statement parseStatement(TokenStream *source, Token token);
+Statements *parseStatements(TokenStream * source);
+Program parser(TokenStream *source);
+
+/* building symbol table */
 void InitializeTable(SymbolTable *table);
-void add_table(SymbolTable *table, char c, DataType t);
+void add_table(SymbolTable *table, Variable t);
 SymbolTable build(Program program);
+
+/* type checking */
 void convertType(Expression * old, DataType type);
 DataType generalize(Expression *left, Expression *right);
+char lookup_id(SymbolTable *table, char* str);
 DataType lookup_table(SymbolTable *table, char c);
+void substitute_var(char* str, char id);
 void checkexpression(Expression * expr, SymbolTable * table);
 void checkstmt(Statement *stmt, SymbolTable * table);
 void check(Program *program, SymbolTable * table);
+
+/* code generation */
 void fprint_op(FILE *target, ValueType op);
 void fprint_expr(FILE *target, Expression *expr);
 void gencode(Program prog, FILE * target);
 
 void print_expr(Expression *expr);
-void test_parser(FILE *source);
+void test_parser(TokenStream *source);
 
 #endif // HEADER_H_INCLUDED
