@@ -206,6 +206,10 @@ Declaration parseDeclaration(TokenStream *source, Token token) {
     case FloatDeclaration:
     case IntegerDeclaration:
         token2 = scanner(source);
+        if (token2.type != Alphabet) {
+            tsSyntaxError(source, "Expect identifier, got [%s]\n", token2.tok);
+            exit(1);
+        }
         if (strcmp(token2.tok, "f") == 0 ||
                 strcmp(token2.tok, "i") == 0 ||
                 strcmp(token2.tok, "p") == 0) {
@@ -270,11 +274,11 @@ Expression *parseValue(TokenStream *source) {
 /*
 Syntax:
 
-Expr : Expr PlusOp  Expr
-     | Expr MinusOp Expr
+Expr : Value PlusOp  Expr
+     | Value MinusOp Expr
      | ExprTail
-ExprTail : ExprTail MulOp ExprTail
-         | ExprTail DivOp ExprTail
+ExprTail : Value MulOp ExprTail
+         | Value DivOp ExprTail
          | Value
 */
 
@@ -500,10 +504,12 @@ void add_table(SymbolTable *table, Variable t) {
         }
     }
 
-    // FIXME: reject if declared variable exhausts the symbol table
-
     if (reg < 0) {
         reg = table->size++;
+    }
+    if (reg >= 26) {
+        printf("Fatal: Attempt to declare a new variable when the symbol table is exhausted.\n");
+        exit(1);
     }
     printf("Declare variable %s as register %c\n", t.varname, reg + 'a');
     table->table[reg] = t;
