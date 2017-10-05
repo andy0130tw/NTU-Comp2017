@@ -252,16 +252,22 @@ Expression *parseValue(TokenStream *source) {
 
     switch (token.type) {
     case Alphabet:
-        (value->v).type = Identifier;
-        (value->v).val.str = copyString(token.tok);
+        value->v = (Value) {
+            .type = Identifier,
+            .val.str = copyString(token.tok)
+        };
         break;
     case IntValue:
-        (value->v).type = IntConst;
-        (value->v).val.ivalue = atoi(token.tok);
+        value->v = (Value) {
+            .type = IntConst,
+            .val.ivalue = atoi(token.tok)
+        };
         break;
     case FloatValue:
-        (value->v).type = FloatConst;
-        (value->v).val.fvalue = atof(token.tok);
+        value->v = (Value) {
+            .type = FloatConst,
+            .val.fvalue = (float) atof(token.tok)
+        };
         break;
     default:
         tsSyntaxError(source, "Expect Identifier or a Number, got [%s]\n", token.tok);
@@ -289,17 +295,19 @@ Expression *parseExpressionTail(TokenStream *source, Expression *lvalue) {
     switch (token.type) {
     case MulOp:
         expr = (Expression *)malloc(sizeof(Expression));
-        (expr->v).type = MulNode;
-        (expr->v).val.op = Mul;
-        expr->leftOperand = lvalue;
-        expr->rightOperand = parseValue(source);
+        *expr = (Expression) {
+            .v = { .type = MulNode, .val.op = Mul },
+            .leftOperand = lvalue,
+            .rightOperand = parseValue(source)
+        };
         return parseExpressionTail(source, expr);
     case DivOp:
         expr = (Expression *)malloc(sizeof(Expression));
-        (expr->v).type = DivNode;
-        (expr->v).val.op = Div;
-        expr->leftOperand = lvalue;
-        expr->rightOperand = parseValue(source);
+        *expr = (Expression) {
+            .v = { .type = DivNode, .val.op = Div },
+            .leftOperand = lvalue,
+            .rightOperand = parseValue(source)
+        };
         return parseExpressionTail(source, expr);
     case PlusOp:
     case MinusOp:
@@ -325,19 +333,21 @@ Expression *parseExpression(TokenStream *source, Expression *lvalue) {
     switch (token.type) {
     case PlusOp:
         expr = (Expression *)malloc(sizeof(Expression));
-        (expr->v).type = PlusNode;
-        (expr->v).val.op = Plus;
-        expr->leftOperand = lvalue;
         rhs = parseValue(source);
-        expr->rightOperand = parseExpressionTail(source, rhs);
+        *expr = (Expression) {
+            .v = { .type = PlusNode, .val.op = Plus },
+            .leftOperand = lvalue,
+            .rightOperand = parseExpressionTail(source, rhs)
+        };
         return parseExpression(source, expr);
     case MinusOp:
         expr = (Expression *)malloc(sizeof(Expression));
-        (expr->v).type = MinusNode;
-        (expr->v).val.op = Minus;
-        expr->leftOperand = lvalue;
         rhs = parseValue(source);
-        expr->rightOperand = parseExpressionTail(source, rhs);
+        *expr = (Expression) {
+            .v = { .type = MinusNode, .val.op = Minus },
+            .leftOperand = lvalue,
+            .rightOperand = parseExpressionTail(source, rhs)
+        };
         return parseExpression(source, expr);
     case MulOp:
     case DivOp:
@@ -547,18 +557,19 @@ void convertType(Expression * old, DataType type) {
             printf("convert to float %s \n", old->v.val.str);
         else
             printf("convert to float %d \n", old->v.val.ivalue);
-        tmp->v = old->v;
-        tmp->leftOperand = old->leftOperand;
-        tmp->rightOperand = old->rightOperand;
-        tmp->type = old->type;
 
-        Value v;
-        v.type = IntToFloatConvertNode;
-        v.val.op = IntToFloatConvert;
-        old->v = v;
-        old->type = Int;
-        old->leftOperand = tmp;
-        old->rightOperand = NULL;
+        memcpy(tmp, old, sizeof(Expression));
+
+        Value v = {
+            .type = IntToFloatConvertNode,
+            .val.op = IntToFloatConvert
+        };
+
+        *old = (Expression) {
+            .v = v,
+            .type = Int,
+            .leftOperand = tmp
+        };
     }
 }
 
@@ -797,14 +808,18 @@ void test_parser(TokenStream *source) {
 
     decls = program.declarations;
 
+    // since the register is not stored back to the decl,
+    // we use a fake counter as a workaround
+    char id_fake = 'a';
     while (decls != NULL) {
         decl = decls->first;
         if (decl.var.type == Int)
             printf("i ");
         if (decl.var.type == Float)
             printf("f ");
-        printf("%s ", decl.var.varname);
+        printf("%c ", id_fake);
         decls = decls->rest;
+        id_fake++;
     }
 
     stmts = program.statements;
