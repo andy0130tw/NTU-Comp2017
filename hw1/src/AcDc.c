@@ -267,26 +267,40 @@ Expression *parseValue(TokenStream *source) {
     return value;
 }
 
+/*
+Syntax:
+
+Expr : Expr PlusOp  Expr
+     | Expr MinusOp Expr
+     | ExprTail
+ExprTail : ExprTail MulOp ExprTail
+         | ExprTail DivOp ExprTail
+         | Value
+*/
+
 Expression *parseExpressionTail(TokenStream *source, Expression *lvalue) {
     Token token = scanner(source);
     Expression *expr;
 
     switch (token.type) {
+    case MulOp:
+        expr = (Expression *)malloc(sizeof(Expression));
+        (expr->v).type = MulNode;
+        (expr->v).val.op = Mul;
+        expr->leftOperand = lvalue;
+        expr->rightOperand = parseValue(source);
+        return parseExpressionTail(source, expr);
+    case DivOp:
+        expr = (Expression *)malloc(sizeof(Expression));
+        (expr->v).type = DivNode;
+        (expr->v).val.op = Div;
+        expr->leftOperand = lvalue;
+        expr->rightOperand = parseValue(source);
+        return parseExpressionTail(source, expr);
     case PlusOp:
-        expr = (Expression *)malloc(sizeof(Expression));
-        (expr->v).type = PlusNode;
-        (expr->v).val.op = Plus;
-        expr->leftOperand = lvalue;
-        expr->rightOperand = parseValue(source);
-        return parseExpressionTail(source, expr);
     case MinusOp:
-        expr = (Expression *)malloc(sizeof(Expression));
-        (expr->v).type = MinusNode;
-        (expr->v).val.op = Minus;
-        expr->leftOperand = lvalue;
-        expr->rightOperand = parseValue(source);
-        return parseExpressionTail(source, expr);
-    // TODO: add MulOp and DivOp
+        retreat(source, token);
+        return lvalue;
     case Alphabet:
     case PrintOp:
         retreat(source, token);
@@ -302,6 +316,7 @@ Expression *parseExpressionTail(TokenStream *source, Expression *lvalue) {
 Expression *parseExpression(TokenStream *source, Expression *lvalue) {
     Token token = scanner(source);
     Expression *expr;
+    Expression *rhs;
 
     switch (token.type) {
     case PlusOp:
@@ -309,22 +324,28 @@ Expression *parseExpression(TokenStream *source, Expression *lvalue) {
         (expr->v).type = PlusNode;
         (expr->v).val.op = Plus;
         expr->leftOperand = lvalue;
-        expr->rightOperand = parseValue(source);
-        return parseExpressionTail(source, expr);
+        rhs = parseValue(source);
+        expr->rightOperand = parseExpressionTail(source, rhs);
+        return parseExpression(source, expr);
     case MinusOp:
         expr = (Expression *)malloc(sizeof(Expression));
         (expr->v).type = MinusNode;
         (expr->v).val.op = Minus;
         expr->leftOperand = lvalue;
-        expr->rightOperand = parseValue(source);
-        return parseExpressionTail(source, expr);
-    // TODO: add MulOp and DivOp
+        rhs = parseValue(source);
+        expr->rightOperand = parseExpressionTail(source, rhs);
+        return parseExpression(source, expr);
+    case MulOp:
+    case DivOp:
+        retreat(source, token);
+        expr = parseExpressionTail(source, lvalue);
+        return parseExpression(source, expr);
     case Alphabet:
     case PrintOp:
         retreat(source, token);
-        return NULL;
+        return lvalue;
     case EOFsymbol:
-        return NULL;
+        return lvalue;
     default:
         tsSyntaxError(source, "Expect a numeric value or an identifier, got [%s]\n", token.tok);
         exit(1);
@@ -642,11 +663,17 @@ void check(Program *program, SymbolTable * table) {
  ************************************************************************/
 void fprint_op(FILE *target, ValueType op) {
     switch (op) {
+    case PlusNode:
+        fprintf(target, "+\n");
+        break;
     case MinusNode:
         fprintf(target, "-\n");
         break;
-    case PlusNode:
-        fprintf(target, "+\n");
+    case MulNode:
+        fprintf(target, "*\n");
+        break;
+    case DivNode:
+        fprintf(target, "/\n");
         break;
     default:
         fprintf(target, "Error in fprintf_op ValueType = %d\n", op);
