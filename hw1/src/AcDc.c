@@ -545,6 +545,35 @@ SymbolTable build(Program program) {
 /********************************************************************
   Type checking
  *********************************************************************/
+static inline __attribute((pure)) float coercingToFloat(Value val) {
+    switch (val.type) {
+    case IntConst:
+        return (float) val.val.ivalue;
+    case FloatConst:
+    default:
+        return val.val.fvalue;  // to eliminate warning
+    }
+}
+
+static inline __attribute((pure)) int evalInt(int a, int b, Operation op) {
+    switch (op) {
+    case Plus:  return a + b; break;
+    case Minus: return a - b; break;
+    case Mul:   return a * b; break;
+    case Div:   return a / b; break;
+    default:    __builtin_unreachable();  // to eliminate warning
+    }
+}
+
+static inline __attribute((pure)) float evalFloat(float a, float b, Operation op) {
+    switch (op) {
+    case Plus:  return a + b; break;
+    case Minus: return a - b; break;
+    case Mul:   return a * b; break;
+    case Div:   return a / b; break;
+    default:    __builtin_unreachable();  // to eliminate warning
+    }
+}
 
 void convertType(Expression * old, DataType type) {
     if (old->type == Float && type == Int) {
@@ -553,23 +582,24 @@ void convertType(Expression * old, DataType type) {
     }
     if (old->type == Int && type == Float) {
         Expression *tmp = (Expression *)malloc(sizeof(Expression));
-        if (old->v.type == Identifier)
+        if (old->v.type == Identifier) {
             printf("convert to float %s \n", old->v.val.str);
-        else
-            printf("convert to float %d \n", old->v.val.ivalue);
+            memcpy(tmp, old, sizeof(Expression));
 
-        memcpy(tmp, old, sizeof(Expression));
-
-        Value v = {
-            .type = IntToFloatConvertNode,
-            .val.op = IntToFloatConvert
-        };
-
-        *old = (Expression) {
-            .v = v,
-            .type = Int,
-            .leftOperand = tmp
-        };
+            *old = (Expression) {
+                .v = { .type = IntToFloatConvertNode, .val.op = IntToFloatConvert },
+                .type = Int,
+                .leftOperand = tmp
+            };
+        } else if (old->v.type == IntConst) {
+            // perform constant folding when type coercion is applied on a constant
+            float conv = old->v.val.ivalue;
+            old->v = (Value) {
+                .type = FloatConst,
+                .val.fvalue = conv
+            };
+            printf("constant folding for i2f: %g\n", conv);
+        }
     }
 }
 
@@ -641,6 +671,41 @@ void checkexpression(Expression * expr, SymbolTable * table) {
         convertType(left, type);//left->type = type;//converto
         convertType(right, type);//right->type = type;//converto
         expr->type = type;
+
+        // perform constant folding if both sides are constants
+        int isFoldableL = left  && (left->v.type  == IntConst || left->v.type  == FloatConst);
+        int isFoldableR = right && (right->v.type == IntConst || right->v.type == FloatConst);
+
+        if (isFoldableL && isFoldableR) {
+            //
+            Value newValue;
+            Operation op = expr->v.val.op;
+            switch (type) {
+            case Int:
+                newValue = (Value) {
+                    .type = IntConst,
+                    .val.ivalue = evalInt(left->v.val.ivalue, right->v.val.ivalue, op)
+                };
+                printf("constant folding for int: %d %c %d = %d\n",
+                       left->v.val.ivalue, ("+-*/")[op], right->v.val.ivalue, newValue.val.ivalue);
+                break;
+            case Float:
+                newValue = (Value) {
+                    .type = FloatConst,
+                    .val.fvalue = evalFloat(coercingToFloat(left->v),
+                                            coercingToFloat(right->v), op)
+                };
+                printf("constant folding for float: %g %c %g = %g\n",
+                       coercingToFloat(left->v), ("+-*/")[op], coercingToFloat(right->v), newValue.val.fvalue);
+                break;
+            default:
+                printf("Error : Constant folding seems feasible but fails\n");
+                break;
+            }
+
+            expr->v = newValue;
+            expr->leftOperand = expr->rightOperand = NULL;
+        }
     }
 }
 
