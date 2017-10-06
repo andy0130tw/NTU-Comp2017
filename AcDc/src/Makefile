@@ -20,7 +20,7 @@ clean_test:
 
 
 % : %.c
-	gcc $< -std=c99 -o $@
+	gcc $< -std=c99 -O2 -o $@
 $(TEST_OUT_DIR):
 	mkdir -p $@
 ../test_output/%: ../test/%.ac .FORCE
