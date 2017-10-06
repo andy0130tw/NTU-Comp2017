@@ -1,0 +1,7 @@
+i a
+f b
+f c
+a = 689
+b = 9.2
+c = a * b
+p c

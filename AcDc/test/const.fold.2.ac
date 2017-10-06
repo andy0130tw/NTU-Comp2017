@@ -1,0 +1,19 @@
+i x
+i y
+i t
+
+x = 1
+
+t = 3 + 4 + x
+p t
+
+t = x + 3 + 4
+p t
+
+y = 2
+
+t = 5 + 6 * x + y
+p t
+
+t = 5 * 6 + x + y
+p t
