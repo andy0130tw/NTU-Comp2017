@@ -38,7 +38,7 @@ In this assignment, you are required to extend the AcDc compiler in three ways:
    `(((a-100) – 50) + 6)` \
    Therefore, there are no constant expressions available for folding unless more complicated optimizations such as applying the commutative laws to this expression.
 
-When integer and float constants are mixed in expressions, you need to pay attention to the correctness of constant folding, for example, `1 / 2 = 0`, but `1.0 / 2 = 0.5`.
+   When integer and float constants are mixed in expressions, you need to pay attention to the correctness of constant folding, for example, `1 / 2 = 0`, but `1.0 / 2 = 0.5`.
 
 Submission requirements:
 
