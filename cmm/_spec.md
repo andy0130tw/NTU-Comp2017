@@ -40,9 +40,7 @@ The output from your scanner looks like the following:
     comment
 */
 /* 3: this is /* the end ***/
-```
 
-```
 Frequency of identifiers:
 a1      1
 abc     4
@@ -72,7 +70,7 @@ Note:
 Submission requirements:
 
 1. DO NOT change the executable name (scanner).
-2. Use the script file “tar.sh” to package your assignment into a single file. Then upload your packaged assignment to CEIBA.
+2. Use the script file “`tar.sh`” to package your assignment into a single file. Then upload your packaged assignment to CEIBA.
 
    Usage: `./tar.sh source_directory studentID1_studentID2` (all student IDs in your team) `version_number` \
    Example: `./tar.sh hw 12345_12346 ver1` \
