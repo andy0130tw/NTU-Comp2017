@@ -10,14 +10,15 @@
 symtab * hash_table[TABLE_SIZE];
 extern int linenumber;
 
+int idcnt;
+
 int HASH(char * str) {
-    int idx = 0;
-    while (*str) {
-        idx = idx << 1;
-        idx += *str;
-        str++;
-    }
-    return (idx & (TABLE_SIZE - 1));
+	unsigned int idx = 0;
+	while (*str) {
+		idx = *str + (idx << 6) + (idx << 16) - idx;
+		str++;
+	}
+	return (idx & (TABLE_SIZE - 1));
 }
 
 /*returns the symbol table entry if found else NULL*/
@@ -59,26 +60,58 @@ void insertID(char *name) {
         hash_table[hash_key] = symptr;
     }
 
-    strcpy(symptr->lexeme, name);
-    symptr->line = linenumber;
-    symptr->counter = 1;
+	idcnt++;
+
+	strcpy(symptr->lexeme, name);
+	symptr->line = linenumber;
+	symptr->counter = 1;
 }
 
 void printSym(symtab* ptr) {
-    printf(" Name = %s \n", ptr->lexeme);
-    printf(" References = %d \n", ptr->counter);
+	printf("%s\t%d\n", ptr->lexeme, ptr->counter);
 }
 
 void printSymTab() {
-    int i;
-    printf("----- Symbol Table ---------\n");
-    for (i = 0; i < TABLE_SIZE; i++) {
-        symtab* symptr;
-        symptr = hash_table[i];
-        while (symptr != NULL) {
-            printf("====>  index = %d \n", i);
-            printSym(symptr);
-            symptr = symptr->front;
-        }
-    }
+	int i;
+	printf("----- Symbol Table ---------\n");
+	for (i = 0; i < TABLE_SIZE; i++) {
+		symtab* symptr;
+		symptr = hash_table[i];
+		int empty = 1;
+		while (symptr != NULL) {
+			if (empty) {
+				printf("[index = %d]\n", i);
+				empty = 0;
+			}
+			printSym(symptr);
+			symptr = symptr->front;
+		}
+	}
+}
+
+int sortSymFn(const void* _a, const void* _b) {
+	symtab* a = *(symtab**) _a;
+	symtab* b = *(symtab**) _b;
+	return strcmp(a->lexeme, b->lexeme);
+}
+
+void printSymFreq() {
+	int cnt = 0;
+	symtab** list = malloc(sizeof(*list) * idcnt);
+
+	// collect symbols
+	for (int i = 0; i < TABLE_SIZE; i++) {
+		symtab* symptr = hash_table[i];
+		while (symptr) {
+			list[cnt++] = symptr;
+			symptr = symptr->front;
+		}
+	}
+
+	qsort(list, cnt, sizeof(*list), sortSymFn);
+
+	puts("Frequency of identifiers:");
+	for (int i = 0; i < cnt; i++) {
+		printSym(list[i]);
+	}
 }
