@@ -42,21 +42,23 @@ The output from your scanner looks like the following:
 /* 3: this is /* the end ***/
 
 Frequency of identifiers:
-a1      1
-abc     4
-b1      1
-def     3
-main        1
-main_1      1
-n       3
-read        1
-write       2
-z_123_x_45  1
+a1	1
+abc	4
+b1	1
+def	3
+main	1
+main_1	1
+n	3
+read	1
+write	2
+z_123_x_45	1
 ```
+
+(Note. the separator for sample output is actually `\t` as clarified [here](https://hackmd.io/s/Sk8hAXk6b))
 
 Note: 
 
-1. It is required that the outputs be sorted. You could simply use the strcmp library function to do the sorting. In this assignment, the entire `"` (double quote) delimited string is treated as a single token i.e. a string constant. In the case of some unknown tokens, your scanner should issue an error message, and print out the unrecognized token, then exit.
+1. It is required that the outputs be sorted. You could simply use the `strcmp` library function to do the sorting. In this assignment, the entire `"` (double quote) delimited string is treated as a single token i.e. a string constant. In the case of some unknown tokens, your scanner should issue an error message, and print out the unrecognized token, then exit.
 2. You may assume the identifier names will not exceed 256 characters. However, the number of distinct identifiers should not be limited.
 3. In the hw2  directory you may find the following files:
    1. `src/lexer.l`        the sample lex program that you may start with
