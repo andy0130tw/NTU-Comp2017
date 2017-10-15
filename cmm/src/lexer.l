@@ -10,8 +10,8 @@ void     insertID();
 void     printSymTab();
 void     printSymFreq();
 
-// #define LOG(...)  printf(__VA_ARGS__)
-#define LOG(...)
+#define LOG(...)  printf(__VA_ARGS__)
+// #define LOG(...)
 
 #define INT         90
 #define FLOAT       91
@@ -42,9 +42,13 @@ letter      [A-Za-z]
 digit       [0-9]
 ID          {letter}({letter}|{digit}|"_")*
 WS          [ \t]+
+
+frac        ({digit}*\.{digit}+)|({digit}+\.)
+expo        ([Ee][+-]?{digit}+)
+
 LitInt      {digit}+
-LitFloat    "-"?({digit}*\.{digit}+)|({digit}+\.)
-LitString   \"([^\"\n]|\\.)*\"
+LitFloat    ({frac}{expo}?|{digit}+{expo})
+LitString   \"[^\"\n]*\"
 
 OP_assign   "="
 OP_or       "||"
@@ -66,8 +70,8 @@ newline     "\n"
 
 DL_lparen   "("
 DL_rparen   ")"
-DL_lbrack   "["
-DL_rbrack   "]"
+DL_lbrckt   "["
+DL_rbrckt   "]"
 DL_lbrace   "{"
 DL_rbrace   "}"
 DL_comma    ","
@@ -93,18 +97,18 @@ error .
 "typedef"  {}
 "if"       {}
 "else"     {}
-"int"      {}
-"float"    {}
+"int"      { LOG("LITER  %s\n", yytext); }
+"float"    { LOG("LITER  %s\n", yytext); }
 "for"      {}
 "void"     {}
 "while"    {}
 
 {WS}            {}
-{LitInt}        { LOG("INT   %s\n", yytext); /*return INT;*/ }
-{LitFloat}      { LOG("FLOAT %s\n", yytext); /*return FLOAT;*/ }
-{LitString}     { LOG("STR   %s\n", yytext); /*return STRING;*/ }
+{LitInt}        { LOG("INT    %s\n", yytext); /*return INT;*/ }
+{LitFloat}      { LOG("FLOAT  %s\n", yytext); /*return FLOAT;*/ }
+{LitString}     { LOG("STRING %s\n", yytext); /*return STRING;*/ }
 {ID}            {
-        LOG("ID    %s\n", yytext);
+        LOG("IDENT  %s\n", yytext);
         ptr = lookup(yytext);
         if (ptr == NULL) {
             insertID(yytext);
@@ -114,20 +118,23 @@ error .
 }
 {}
 
-{OP_assign}     { LOG("ASSIG %s\n", yytext); /* return OP_ASSIGN; */}
+{OP_assign}     { LOG("ASSIGN %s\n", yytext); /* return OP_ASSIGN; */ }
 {OP_or}         /* return OP_OR; */
 {OP_plus}       /* return OP_PLUS; */
 {OP_minus}      /* return OP_MINUS; */
-{OP_mul}        /* return OP_MUL; */
-{OP_div}        /* return OP_DIV; */
+{OP_mul}        { LOG("MUL    %s\n", yytext); /* return OP_MUL; */ }
+{OP_div}        { LOG("DIV    %s\n", yytext); /* return OP_DIV; */ }
 {DL_lparen}     /* return MK_LPAREN; */
 {DL_rparen}     /* return MK_RPAREN; */
+{DL_lbrckt}     /* return MK_LBRCKT; */
+{DL_rbrckt}     /* return MK_RBRCKT; */
 {DL_lbrace}     /* return MK_LBRACE; */
 {DL_rbrace}     /* return MK_RBRACE; */
 {DL_comma}      {}
 {DL_semicol}    {}
+{DL_dot}        {}
 
-{newline}       { linenumber += 1; }
+{newline}       { linenumber++; }
 {error}         {
         printf("ERR %s\n", yytext);
         return ERROR;
@@ -142,10 +149,6 @@ int main(int argc, char **argv) {
     else
         yyin = stdin;
     int status = yylex();
-    if (status == ERROR) {
-      return 0;
-    }
-
     puts("");
     printSymFreq();
 }
