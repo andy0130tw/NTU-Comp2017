@@ -10,8 +10,8 @@ void     insertID();
 void     printSymTab();
 void     printSymFreq();
 
-#define LOG(...)  printf(__VA_ARGS__)
-// #define LOG(...)
+// #define LOG(...)  printf(__VA_ARGS__)
+#define LOG(...)
 
 #define INT         90
 #define FLOAT       91
@@ -149,6 +149,5 @@ int main(int argc, char **argv) {
     else
         yyin = stdin;
     int status = yylex();
-    puts("");
     printSymFreq();
 }
