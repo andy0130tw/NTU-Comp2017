@@ -1,0 +1,8 @@
+.*.un~
+/parser
+/parser.tab.*
+/lex.yy.c
+/AST_Graph.gv
+/AST_Graph.svg
+/parser.output
+
