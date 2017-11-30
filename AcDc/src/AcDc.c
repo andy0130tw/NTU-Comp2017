@@ -804,16 +804,16 @@ void gencode(Program prog, FILE * target) {
             fprintf(target, "p\n");
             break;
         case Assignment:
+            // set precision for correct int/float arithmetics
+            switch (stmt.stmt.assign.type) {
+            case Int:
+                fprintf(target,"0 k\n"); break;
+            case Float:
+                fprintf(target,"5 k\n"); break;
+            default: break;
+            }
             fprint_expr(target, stmt.stmt.assign.expr);
-            /*
-               if(stmt.stmt.assign.type == Int){
-               fprintf(target,"0 k\n");
-               }
-               else if(stmt.stmt.assign.type == Float){
-               fprintf(target,"5 k\n");
-               }*/
             fprintf(target, "s%c\n", stmt.stmt.assign.str[0]);
-            fprintf(target, "0 k\n");
             break;
         }
         stmts = stmts->rest;
