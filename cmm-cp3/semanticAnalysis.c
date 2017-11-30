@@ -35,8 +35,7 @@ void getExprOrConstValue(AST_NODE* exprOrConstNode, int* iValue, float* fValue);
 void evaluateExprValue(AST_NODE* exprNode);
 
 
-typedef enum ErrorMsgKind
-{
+typedef enum ErrorMsgKind {
     SYMBOL_IS_NOT_TYPE,
     SYMBOL_REDECLARE,
     SYMBOL_UNDECLARED,
@@ -63,8 +62,7 @@ typedef enum ErrorMsgKind
     PASS_SCALAR_TO_ARRAY
 } ErrorMsgKind;
 
-void printErrorMsgSpecial(AST_NODE* node1, char* name2, ErrorMsgKind errorMsgKind)
-{
+void printErrorMsgSpecial(AST_NODE* node1, char* name2, ErrorMsgKind errorMsgKind) {
     g_anyErrorOccur = 1;
     printf("Error found in line %d\n", node1->linenumber);
     /*
@@ -78,8 +76,7 @@ void printErrorMsgSpecial(AST_NODE* node1, char* name2, ErrorMsgKind errorMsgKin
 }
 
 
-void printErrorMsg(AST_NODE* node, ErrorMsgKind errorMsgKind)
-{
+void printErrorMsg(AST_NODE* node, ErrorMsgKind errorMsgKind) {
     g_anyErrorOccur = 1;
     printf("Error found in line %d\n", node->linenumber);
     /*
@@ -92,15 +89,13 @@ void printErrorMsg(AST_NODE* node, ErrorMsgKind errorMsgKind)
 }
 
 
-void semanticAnalysis(AST_NODE *root)
-{
+void semanticAnalysis(AST_NODE *root) {
     processProgramNode(root);
 }
 
 
-DATA_TYPE getBiggerType(DATA_TYPE dataType1, DATA_TYPE dataType2)
-{
-    if(dataType1 == FLOAT_TYPE || dataType2 == FLOAT_TYPE) {
+DATA_TYPE getBiggerType(DATA_TYPE dataType1, DATA_TYPE dataType2) {
+    if (dataType1 == FLOAT_TYPE || dataType2 == FLOAT_TYPE) {
         return FLOAT_TYPE;
     } else {
         return INT_TYPE;
@@ -108,116 +103,91 @@ DATA_TYPE getBiggerType(DATA_TYPE dataType1, DATA_TYPE dataType2)
 }
 
 
-void processProgramNode(AST_NODE *programNode)
-{
+void processProgramNode(AST_NODE *programNode) {
 }
 
-void processDeclarationNode(AST_NODE* declarationNode)
-{
-}
-
-
-void processTypeNode(AST_NODE* idNodeAsType)
-{
+void processDeclarationNode(AST_NODE* declarationNode) {
 }
 
 
-void declareIdList(AST_NODE* declarationNode, SymbolAttributeKind isVariableOrTypeAttribute, int ignoreArrayFirstDimSize)
-{
-}
-
-void checkAssignOrExpr(AST_NODE* assignOrExprRelatedNode)
-{
-}
-
-void checkWhileStmt(AST_NODE* whileNode)
-{
+void processTypeNode(AST_NODE* idNodeAsType) {
 }
 
 
-void checkForStmt(AST_NODE* forNode)
-{
+void declareIdList(AST_NODE* declarationNode, SymbolAttributeKind isVariableOrTypeAttribute, int ignoreArrayFirstDimSize) {
+}
+
+void checkAssignOrExpr(AST_NODE* assignOrExprRelatedNode) {
+}
+
+void checkWhileStmt(AST_NODE* whileNode) {
 }
 
 
-void checkAssignmentStmt(AST_NODE* assignmentNode)
-{
+void checkForStmt(AST_NODE* forNode) {
 }
 
 
-void checkIfStmt(AST_NODE* ifNode)
-{
-}
-
-void checkWriteFunction(AST_NODE* functionCallNode)
-{
-}
-
-void checkFunctionCall(AST_NODE* functionCallNode)
-{
-}
-
-void checkParameterPassing(Parameter* formalParameter, AST_NODE* actualParameter)
-{
+void checkAssignmentStmt(AST_NODE* assignmentNode) {
 }
 
 
-void processExprRelatedNode(AST_NODE* exprRelatedNode)
-{
+void checkIfStmt(AST_NODE* ifNode) {
 }
 
-void getExprOrConstValue(AST_NODE* exprOrConstNode, int* iValue, float* fValue)
-{
+void checkWriteFunction(AST_NODE* functionCallNode) {
 }
 
-void evaluateExprValue(AST_NODE* exprNode)
-{
+void checkFunctionCall(AST_NODE* functionCallNode) {
 }
 
-
-void processExprNode(AST_NODE* exprNode)
-{
+void checkParameterPassing(Parameter* formalParameter, AST_NODE* actualParameter) {
 }
 
 
-void processVariableLValue(AST_NODE* idNode)
-{
+void processExprRelatedNode(AST_NODE* exprRelatedNode) {
 }
 
-void processVariableRValue(AST_NODE* idNode)
-{
+void getExprOrConstValue(AST_NODE* exprOrConstNode, int* iValue, float* fValue) {
 }
 
-
-void processConstValueNode(AST_NODE* constValueNode)
-{
+void evaluateExprValue(AST_NODE* exprNode) {
 }
 
 
-void checkReturnStmt(AST_NODE* returnNode)
-{
+void processExprNode(AST_NODE* exprNode) {
 }
 
 
-void processBlockNode(AST_NODE* blockNode)
-{
+void processVariableLValue(AST_NODE* idNode) {
+}
+
+void processVariableRValue(AST_NODE* idNode) {
 }
 
 
-void processStmtNode(AST_NODE* stmtNode)
-{
+void processConstValueNode(AST_NODE* constValueNode) {
 }
 
 
-void processGeneralNode(AST_NODE *node)
-{
-}
-
-void processDeclDimList(AST_NODE* idNode, TypeDescriptor* typeDescriptor, int ignoreFirstDimSize)
-{
+void checkReturnStmt(AST_NODE* returnNode) {
 }
 
 
-void declareFunction(AST_NODE* declarationNode)
-{
+void processBlockNode(AST_NODE* blockNode) {
+}
+
+
+void processStmtNode(AST_NODE* stmtNode) {
+}
+
+
+void processGeneralNode(AST_NODE *node) {
+}
+
+void processDeclDimList(AST_NODE* idNode, TypeDescriptor* typeDescriptor, int ignoreFirstDimSize) {
+}
+
+
+void declareFunction(AST_NODE* declarationNode) {
 }
