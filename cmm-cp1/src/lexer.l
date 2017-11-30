@@ -87,9 +87,13 @@ error .
 }
 
 <comment>{
-  [^/\n*][^\n*]*"*"+  { yymore(); }
-  {newline}  { yymore(); linenumber++; }
-  "/"        { printf("%s\n", yytext); BEGIN(INITIAL); }
+  [^/*][^*]*"*"+  { yymore(); }
+  "/"        {
+    char* c = yytext;
+    while (*c) { if (*c == '\n') linenumber++; c++; }
+    printf("%s\n", yytext);
+    BEGIN(INITIAL);
+  }
   <<EOF>>    { printf("ERR: unterminated comment\n"); exit(1); }
 }
 
@@ -120,6 +124,15 @@ error .
 
 {OP_assign}     { LOG("ASSIGN %s\n", yytext); /* return OP_ASSIGN; */ }
 {OP_or}         /* return OP_OR; */
+{OP_and}        {}
+{OP_not}        {}
+{OP_eq}         {}
+{OP_ne}         {}
+{OP_gt}         {}
+{OP_lt}         {}
+{OP_ge}         {}
+{OP_le}         {}
+
 {OP_plus}       /* return OP_PLUS; */
 {OP_minus}      /* return OP_MINUS; */
 {OP_mul}        { LOG("MUL    %s\n", yytext); /* return OP_MUL; */ }
