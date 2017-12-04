@@ -11,6 +11,7 @@
 #define SYMBOL_TABLE_VOID_NAME "void"
 #define SYMBOL_TABLE_SYS_LIB_READ "read"
 #define SYMBOL_TABLE_SYS_LIB_FREAD "fread"
+#define SYMBOL_TABLE_SYS_LIB_WRITE "write"
 #define HASH_TABLE_SIZE 256
 
 
@@ -90,5 +91,7 @@ void removeSymbol(char* symbolName);
 int declaredLocally(char* symbolName);
 void openScope();
 void closeScope();
+
+SymbolAttribute* allocateSymbolAttribute(SymbolAttributeKind attrType, const void* ptrToTempAttrDesc);
 
 #endif
