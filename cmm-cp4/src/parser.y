@@ -754,28 +754,26 @@ dim_list	: dim_list MK_LB expr MK_RB
 %%
 
 #include "lex.yy.c"
-main (argc, argv)
-int argc;
-char *argv[];
-  {
-     yyin = fopen(argv[1],"r");
-     yyparse();
-     // printGV(prog, NULL);
 
-     initializeSymbolTable();
+int main(int argc, char* argv[]) {
+    yyin = fopen(argv[1], "r");
+    yyparse();
 
-     semanticAnalysis(prog);
+    initializeSymbolTable();
+    semanticAnalysis(prog);
 
-     symbolTableEnd();
-     if (!g_anyErrorOccur) {
-        printf("Parsing completed. No errors found.\n");
-     }
-  } /* main */
+    if (!g_anyErrorOccur) {
+        codegen(prog);
+    }
 
+    symbolTableEnd();
 
-int yyerror (mesg)
-char *mesg;
-  {
-  printf("%s\t%d\t%s\t%s\n", "Error found in Line ", linenumber, "next token: ", yytext );
-  exit(1);
-  }
+    if (!g_anyErrorOccur) {
+       printf("Parsing completed. No errors found.\n");
+    }
+}
+
+int yyerror(char* mesg) {
+    printf("%s\t%d\t%s\t%s\n", "Error found in Line ", linenumber, "next token: ", yytext);
+    exit(1);
+}

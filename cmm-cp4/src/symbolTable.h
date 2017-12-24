@@ -9,6 +9,7 @@
 #define SYMBOL_TABLE_FLOAT_NAME "float"
 #define SYMBOL_TABLE_VOID_NAME "void"
 #define SYMBOL_TABLE_SYS_LIB_READ "read"
+#define SYMBOL_TABLE_SYS_LIB_WRITE "write"
 #define SYMBOL_TABLE_SYS_LIB_FREAD "fread"
 #define HASH_TABLE_SIZE 256
 

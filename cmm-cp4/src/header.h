@@ -102,7 +102,7 @@ typedef struct STMTSemanticValue
 typedef struct EXPRSemanticValue
 {
     EXPR_KIND kind;
-    
+
     int isConstEval;
 
     union
@@ -140,33 +140,34 @@ typedef struct TypeSpecSemanticValue
 //don't modify or lexer may break
 typedef struct CON_Type{
         C_type  const_type;
-	union {
-		int     intval;
-		double  fval;
-		char    *sc; }
-		const_u;
+    union {
+        int     intval;
+        double  fval;
+        char    *sc; }
+        const_u;
 } CON_Type;
 
 
 struct AST_NODE {
-	struct AST_NODE *child;
-	struct AST_NODE *parent;
-	struct AST_NODE *rightSibling;
-	struct AST_NODE *leftmostSibling;
-	AST_TYPE nodeType;
+    struct AST_NODE *child;
+    struct AST_NODE *parent;
+    struct AST_NODE *rightSibling;
+    struct AST_NODE *leftmostSibling;
+    AST_TYPE nodeType;
     DATA_TYPE dataType;
-	int linenumber;
-	union {
+    int linenumber;
+    union {
         IdentifierSemanticValue identifierSemanticValue;
         STMTSemanticValue stmtSemanticValue;
         DECLSemanticValue declSemanticValue;
         EXPRSemanticValue exprSemanticValue;
-		CON_Type *const1;
-	} semantic_value;
+        CON_Type *const1;
+    } semantic_value;
 };
 typedef struct AST_NODE AST_NODE;
 
 AST_NODE *Allocate(AST_TYPE type);
 void semanticAnalysis(AST_NODE *root);
+void codegen(AST_NODE *root);
 
 #endif
