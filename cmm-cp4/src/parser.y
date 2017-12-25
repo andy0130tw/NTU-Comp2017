@@ -7,6 +7,10 @@
 #include <stdarg.h>
 #include "header.h"
 #include "symbolTable.h"
+
+int yylex();
+int yyerror(char*);
+
 int linenumber = 1;
 AST_NODE *prog;
 
@@ -170,7 +174,7 @@ program		: global_decl_list { $$=Allocate(PROGRAM_NODE);  makeChild($$,$1); prog
 global_decl_list: global_decl_list global_decl
                     {
                         $$ = makeSibling($1, $2);
-                    }	
+                    }
                 | global_decl
                     {
                         $$ = $1;
@@ -227,7 +231,7 @@ param_list	: param_list MK_COMMA  param
                 {
                     $$ = makeSibling($1, $3);
                 }
-            | param	
+            | param
                 {
                     $$ = $1;
                 }

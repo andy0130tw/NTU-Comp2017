@@ -94,6 +94,11 @@ typedef enum AST_TYPE
 // AST_NODE's semantic value
 //*************************
 
+#define SEMVAL_ID(node)    ((node)->semantic_value.identifierSemanticValue)
+#define SEMVAL_STMT(node)  ((node)->semantic_value.stmtSemanticValue)
+#define SEMVAL_EXPR(node)  ((node)->semantic_value.exprSemanticValue)
+#define SEMVAL_DECL(node)  ((node)->semantic_value.declSemanticValue)
+
 typedef struct STMTSemanticValue
 {
     STMT_KIND kind;
@@ -163,6 +168,8 @@ struct AST_NODE {
         EXPRSemanticValue exprSemanticValue;
         CON_Type *const1;
     } semantic_value;
+
+    int regIndex;
 };
 typedef struct AST_NODE AST_NODE;
 

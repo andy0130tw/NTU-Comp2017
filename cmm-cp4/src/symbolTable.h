@@ -69,6 +69,8 @@ typedef struct SymbolAttribute
         TypeDescriptor* typeDescriptor;
         FunctionSignature* functionSignature;
     } attr;
+
+    int offset;  // offset relative to AR
 } SymbolAttribute;
 
 typedef struct SymbolTableEntry
@@ -101,5 +103,9 @@ void removeSymbol(char* symbolName);
 int declaredLocally(char* symbolName);
 void openScope();
 void closeScope();
+
+SymbolAttribute* allocateSymbolAttribute(SymbolAttributeKind attrType, const void* ptrToTempAttrDesc);
+
+int getSizeByType(TypeDescriptor*);
 
 #endif
