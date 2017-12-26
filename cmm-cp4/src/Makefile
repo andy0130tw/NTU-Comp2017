@@ -37,3 +37,6 @@ codegen.o: codegen.c
 clean:
 	rm -f $(TARGET) $(OBJECT) $(OUTPUT)
 
+compile:
+	aarch64-linux-gnu-gcc -static main.S -g
+	qemu-aarch64-static ./a.out

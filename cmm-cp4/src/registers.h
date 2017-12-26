@@ -13,6 +13,9 @@ int g_maxOffsetInProcedure;
 extern const char* regGPName[];
 extern const char* regIntName[];
 extern const char* regFloatName[];
+extern const char* regWorkName[];
+extern const int regIntCount;
+extern const int regFloatCount;
 extern int regIntFreeCount;
 extern int regFloatFreeCount;
 extern int regIntIsUsed[];
@@ -29,5 +32,7 @@ void increaseOffset(SymbolAttribute*);
 int getFreeRegister(REGISTER_TYPE);
 void freeRegister(REGISTER_TYPE, int idx);
 void freeAllRegisters();
+
+#define WORK_REG(type, offs)  ((type) == REG_INT ? (regWorkName[offs]) : (regWorkName[(offs) + 2]))
 
 #endif  // __REGISTERS_H__

@@ -44,13 +44,15 @@ void cgExprRelatedNode(AST_NODE*);
 void cgDeclareLocalVarList(AST_NODE* declarationNode, int isFunctionParameter);
 void cgDeclDimList(AST_NODE* idNode, TypeDescriptor* typeDescriptor, int ignoreFirstDimSize);
 void cgDeclareFunction(AST_NODE*);
-void cgCheckAssignmentStmt(AST_NODE* assignmentStmtNode);
-void cgCheckWhileStmt(AST_NODE* whileStmtNode);
-void cgCheckForStmt(AST_NODE* forStmtNode);
-void cgCheckIfStmt(AST_NODE* ifStmtNode);
-void cgCheckFunctionCall(AST_NODE* functionCallNode);
-void cgCheckReturnStmt(AST_NODE* returnStmtNode);
-void cgCheckWriteFunction(AST_NODE* functionCallNode);
+void cgAssignmentStmt(AST_NODE* assignmentStmtNode);
+void cgWhileStmt(AST_NODE* whileStmtNode);
+void cgForStmt(AST_NODE* forStmtNode);
+void cgIfStmt(AST_NODE* ifStmtNode);
+
+void cgFunctionCall(AST_NODE* functionCallNode);
+void cgWriteFunction(AST_NODE* functionCallNode);
+
+void cgReturnStmt(AST_NODE* returnStmtNode);
 void cgConstValueNode(AST_NODE* constValueNode);
 void cgExprNode(AST_NODE* exprNode);
 void cgVariableRValue(AST_NODE*);
