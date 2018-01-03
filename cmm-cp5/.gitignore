@@ -1,0 +1,7 @@
+.*.un~
+/src/parser
+/src/parser.tab.*
+/src/lex.yy.c
+/src/parser.output
+/src/output.s
+
