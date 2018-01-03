@@ -4,8 +4,7 @@ char g_sourceFile[MAX_CODE_LINE_COUNT][MAX_LINE_LENGTH];
 
 int printCommentError = 0;
 
-void readSourceFile(char* fileName)
-{
+void readSourceFile(char* fileName) {
     FILE* fp = fopen(fileName, "r");
     if (!fp) {
         printf("Cannot open file \"%s\"", fileName);
@@ -22,8 +21,7 @@ void readSourceFile(char* fileName)
     }
 }
 
-void printSourceFile(FILE* outputFp, int lineNumber)
-{
+void printSourceFile(FILE* outputFp, int lineNumber) {
     if (!printCommentError) {
         fprintf(outputFp, "# %s\n", g_sourceFile[lineNumber - 1]);
     }

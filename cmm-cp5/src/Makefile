@@ -4,7 +4,7 @@ CC = gcc -g
 LEX = flex
 YACC = bison -v
 YACCFLAG = -d
-LIBS = -lfl 
+LIBS = -lfl
 
 parser: parser.tab.o alloc.o functions.o symbolTable.o semanticAnalysis.o codeGeneration.o myRegister.o offsetInAR.o myIntVector.o printSourceFile.o
 	$(CC) -o $(TARGET) parser.tab.o alloc.o functions.o symbolTable.o semanticAnalysis.o codeGeneration.o myRegister.o offsetInAR.o myIntVector.o printSourceFile.o $(LIBS)
@@ -14,37 +14,40 @@ parser.tab.o: parser.tab.c lex.yy.c alloc.o functions.c symbolTable.o semanticAn
 
 codeGeneration.o: codeGeneration.c
 	$(CC) -c codeGeneration.c
-    
+
 semanticAnalysis.o: semanticAnalysis.c
 	$(CC) -c semanticAnalysis.c
-    
+
 printSourceFile.o: printSourceFile.c
 	$(CC) -c printSourceFile.c
 
 offsetInAR.o: offsetInAR.c
 	$(CC) -c offsetInAR.c
-    
+
 myRegister.o: myRegister.c
 	$(CC) -c myRegister.c
-    
+
 myIntVector.o: myIntVector.c
 	$(CC) -c myIntVector.c
-    
+
 symbolTable.o: symbolTable.c
 	$(CC) -c symbolTable.c
 
 lex.yy.c: lexer3.l
 	$(LEX) lexer3.l
 
-parser.tab.c: parser.y 
+parser.tab.c: parser.y
 	$(YACC) $(YACCFLAG) parser.y
 
 alloc.o: alloc.c
 	$(CC) -c alloc.c
-	
+
 functions.o: functions.c
 	$(CC) -c functions.c
 
 clean:
 	rm -f $(TARGET) $(OBJECT) parser.output
 
+compile:
+	aarch64-linux-gnu-gcc -static main.S -g
+	qemu-aarch64-static ./a.out
