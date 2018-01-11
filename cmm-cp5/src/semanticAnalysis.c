@@ -8,6 +8,8 @@
 
 int g_anyErrorOccur = 0;
 
+static int fpOffset = 16;
+
 DATA_TYPE getBiggerType(DATA_TYPE dataType1, DATA_TYPE dataType2);
 void processProgramNode(AST_NODE *programNode);
 void processDeclarationNode(AST_NODE* declarationNode);
@@ -354,8 +356,14 @@ void declareIdList(AST_NODE* declarationNode, SymbolAttributeKind isVariableOrTy
                     enterSymbol(traverseIDList->semantic_value.identifierSemanticValue.identifierName, attribute);
 
                 //if(is variable && !function parameter && !globalVariable)
-                if (isVariableOrTypeAttribute == VARIABLE_ATTRIBUTE && !ignoreArrayFirstDimSize && !isGlobalVariable(traverseIDList->semantic_value.identifierSemanticValue.symbolTableEntry)) {
-                    setOffsetAndUpdateGlobalOffset(attribute);
+                if (isVariableOrTypeAttribute == VARIABLE_ATTRIBUTE && !isGlobalVariable(traverseIDList->semantic_value.identifierSemanticValue.symbolTableEntry)) {
+                    if (ignoreArrayFirstDimSize) {
+                        // function parameter
+                        attribute->offsetInAR = fpOffset;
+                    } else {
+                        // local var.
+                        setOffsetAndUpdateGlobalOffset(attribute);
+                    }
                 }
             }
         }
@@ -1093,6 +1101,9 @@ void processGeneralNode(AST_NODE *node) {
             if (traverseChildren->dataType == ERROR_TYPE) {
                 node->dataType = ERROR_TYPE;
             }
+            if (node->dataType != ERROR_TYPE) {
+                node->dataType = traverseChildren->dataType;
+            }
             traverseChildren = traverseChildren->rightSibling;
         }
         break;
@@ -1101,6 +1112,9 @@ void processGeneralNode(AST_NODE *node) {
             processExprRelatedNode(traverseChildren);
             if (traverseChildren->dataType == ERROR_TYPE) {
                 node->dataType = ERROR_TYPE;
+            }
+            if (node->dataType != ERROR_TYPE) {
+                node->dataType = traverseChildren->dataType;
             }
             traverseChildren = traverseChildren->rightSibling;
         }
@@ -1213,6 +1227,8 @@ void declareFunction(AST_NODE* declarationNode) {
 
     while (traverseParameter) {
         ++parametersCount;
+        fpOffset += 8;
+
         processDeclarationNode(traverseParameter);
         AST_NODE *parameterID = traverseParameter->child->rightSibling;
         if (traverseParameter->dataType == ERROR_TYPE) {
@@ -1228,6 +1244,9 @@ void declareFunction(AST_NODE* declarationNode) {
         traverseParameter = traverseParameter->rightSibling;
     }
     attribute->attr.functionSignature->parametersCount = parametersCount;
+
+    // reset fp offset
+    fpOffset = 16;
 
     if (errorOccur && (attribute != NULL)) {
         Parameter* traverseParameter = attribute->attr.functionSignature->parameterList;
